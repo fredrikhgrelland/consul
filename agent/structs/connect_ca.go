@@ -457,7 +457,7 @@ func (c *ConsulCAProviderConfig) Validate() error {
 		return fmt.Errorf("Intermediate Cert TTL must be greater than 3h.")
 	}
 	if c.IntermediateCertTTL <= 3*c.CommonCAProviderConfig.LeafCertTTL {
-		// Intermediate Certificates are being send to the proxy when
+		// Intermediate Certificates are being sent to the proxy when
 		// the Leaf Certificate changes because they are bundled
 		// together.
 		// That means that the Intermediate Certificate TTL must be at
