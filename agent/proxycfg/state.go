@@ -90,6 +90,17 @@ func newState(ns *structs.NodeService, token string) (*state, error) {
 		taggedAddresses[k] = v
 	}
 
+	// we can safely modify these since we just copied them
+	for idx, _ := range proxyCfg.Upstreams {
+		if proxyCfg.Upstreams[idx].DestinationNamespace == "" {
+			// default the upstreams target namespace to the namespace of the proxy
+			// doing this here prevents needing much more complex logic a bunch of other
+			// places and makes tracking these upstreams simpler as we can dedup them
+			// with the maps tracking upstream ids being watched.
+			proxyCfg.Upstreams[idx].DestinationNamespace = ns.EnterpriseMeta.NamespaceOrDefault()
+		}
+	}
+
 	return &state{
 		kind:            ns.Kind,
 		service:         ns.Service,
@@ -232,8 +243,8 @@ func (s *state) initWatchesConnectProxy() error {
 		return err
 	}
 
-	// let namespace inference happen server side
-	currentNamespace := ""
+	// default the namespace to the namespace of this proxy service
+	currentNamespace := s.proxyID.NamespaceOrDefault()
 
 	// Watch for updates to service endpoints for all upstreams
 	for _, u := range s.proxyCfg.Upstreams {
